@@ -1,0 +1,86 @@
+\section{Modèle Mathématiques}
+
+Les données présentées sont celle d'une étude médicale sur la prise d'un traitement pour traiter les contractions ventilatoires prématurées (PVC).
+On dispose de deux variables observées : 
+\begin{itemize}
+    \item $x_i$: PVC par minute avant la prise du traitement.
+    \item $y_i$ PVC par minute après la prise du traitement.
+\end{itemize}
+
+Les hypothèse de modélisations conduisent au modèle suivant : 
+
+\begin{equation} \label{eq1}
+\begin{split}
+    & x_i \sim \mathcal P (\lambda_i) \\
+    & y_i \sim \mathcal P (\beta \lambda_i) \text{ pour les patients non gueris par le traitement}
+\end{split}
+\end{equation}
+
+On suppose toutes les variables aléatoires $(x_i)$ et $(y_i)$ indépendantes entre elles.
+
+De plus, on modélise la probabilité d'être guéri par le traitement par une loi binomiale de paramètre $\theta$ : $\{\text{guerison du patient } i \} \sim \mathcal B(\theta)$.
+
+Afin de pas se compliquer la tâche avec les variables $\lambda_i$, il est possible de montrer :
+
+\begin{equation}
+    P(y_i \mid\{\text{non guerison du patient }i\} \cap t_i) \sim \mathcal{B}ern \left (\dfrac{\beta}{1 + \beta}, t_i \right) 
+\end{equation}
+
+Avec $t_i = x_i + y_i$.
+
+De là, on en déduit alors la loi $y_i|t_i$ :
+
+\begin{equation} \label{eq3}
+\begin{split}
+&P(y_i = 0 \mid t_i)  = \theta + (1 - \theta )(1 - p) t_i \\
+&P(y_i\mid t_i) = (1 - \theta) \binom{t_i}{y_i}p^{y_i}(1-p)^{t_i-y_i}, y_i \geq 1 \\
+&p = \dfrac{\beta}{1 + \beta}
+\end{split}
+\end{equation}
+ 
+\begin{center}
+\begin{tikzpicture}
+
+    \node[draw, rectangle] (N1) { $\mathcal{N}(0, 10^{-4})$ };
+    \node[draw, rectangle, right=4cm of N1] (N2) { $\mathcal{N}(0, 10^{-4})$ };
+
+    \node[draw, circle, below=0.8cm of N1] (alpha) { $\alpha$ };
+    \node[draw, circle, below=0.8cm of N2] (delta) { $\delta$ };
+
+    \node[draw, rounded corners, below=0.8cm of alpha] (logitp) { $logit( p) = \alpha$ };
+    \node[draw, rounded corners, below=0.8cm of delta] (logittheta) { $logit( \theta) = \delta$ };
+
+    \path (logitp) -- (logittheta) coordinate[midway] (midpoint);
+
+    \node[draw, circle, below=1.2cm of midpoint] (yi) { $y_i$ };
+
+    \draw[->] (N1) -- (alpha);
+    \draw[->] (N2) -- (delta);
+    \draw[->] (alpha) -- (logitp);
+    \draw[->] (delta) -- (logittheta);
+    \draw[->] (logitp) -- (yi);
+    \draw[->] (logittheta) -- (yi);
+
+\end{tikzpicture}
+\end{center}
+
+On commence par calculer la loi de $\theta$ et de $p$ par la méthode la variable muette (ou via \href{https://en.wikipedia.org/wiki/Logit-normal_distribution}{wikipedia} :
+
+\begin{equation}\label{eq4}
+    \begin{split}
+        &P(p) \propto exp \left (-\dfrac{1}{2 \sigma^2}logit(p)^2 \right) \dfrac{1}{p (1-p)} \\
+        &P(\theta) \propto exp \left (-\dfrac{1}{2 \sigma^2}logit(\theta)^2 \right) \dfrac{1}{\theta (1-\theta)}
+    \end{split}
+\end{equation}
+
+Et on peut obtenir les lois conditionnelles : 
+\begin{equation}\label{eq5}
+\begin{split}
+    P(p\mid \dots) &\propto \prod_{i=1}^n P(y_i \mid t_i) P(p)\\
+    &\propto exp \left (-\dfrac{1}{2 \sigma^2}logit(p)^2 \right) \dfrac{1}{p (1-p)} \prod_{i=1}^n P(y_i \mid t_i) \\
+    P(\theta \mid \dots) &\propto \prod_{i=1}^n P(y_i \mid t_i) P(\theta) \\
+    &\propto exp \left (-\dfrac{1}{2 \sigma^2}logit(\theta)^2 \right) \dfrac{1}{\theta (1-\theta)} \prod_{i=1}^n P(y_i \mid t_i)
+\end{split}
+\end{equation}
+
+où $P(y_i \mid t_i)$ est donné par [\ref{eq3}] (Il est complexe de plus discrétiser notre formule ici car le cas $y_i = 0$ et $y_i \geq 1$ ne portent pas les mêmes facteurs).

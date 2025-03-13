@@ -1,0 +1,41 @@
+\documentclass{rapportECN}
+\title{RAPPORT BAYES} %Titre du fichier
+
+
+\usepackage{listings}
+\usepackage{booktabs}
+\usepackage{rotating}
+\usepackage{graphicx} 
+\usepackage{mwe} 
+\usepackage{adjustbox}
+\usepackage{minted}
+\usepackage{tabularx}
+\usepackage {tikz}
+\usetikzlibrary {positioning}
+\usetikzlibrary{calc}
+\usepackage{bbm}
+
+\begin{document}
+
+%----------- Informations du rapport ---------
+
+\titre{Rapport Bayes} %Titre du fichier .pdf
+%\UE{PIIA} %Nom de l'UE
+\sujet{BAYES} %Nom du sujet
+\enseignant{Mathieu \textsc{RIBATET}} %Nom de l'enseignant
+\eleves{Tom \textsc{MAYE-LASSERRE} \\
+        Jérôme \textsc{FAUCHEUX}
+		} %Nom des élèves
+
+%----------- Initialisation -------------------
+        
+\fairemarges %Afficher les marges
+\fairepagedegarde %Créer la page de garde
+%\tabledematieres %Créer la table de matières
+
+%------------ Corps du rapport ----------------
+
+\include{corptexte}
+\include{annexe}
+
+\end{document}
