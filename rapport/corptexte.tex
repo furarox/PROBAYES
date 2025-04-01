@@ -16,33 +16,27 @@ Les hypothèse de modélisations conduisent au modèle suivant :
 \end{split}
 \end{equation}
 
+$\beta$ représente alors, pour les patients non guéris, la modification moyenne des PVC due à la prise du médicament (accélération si $\beta > 1$, diminution si $\beta < 1$).
+
 On suppose toutes les variables aléatoires $(x_i)$ et $(y_i)$ indépendantes entre elles.
 
 De plus, on modélise la probabilité d'être guéri par le traitement par une loi binomiale de paramètre $\theta$ : $\{\text{guerison du patient } i \} \sim \mathcal B(\theta)$.
 
-Afin de pas se compliquer la tâche avec les variables $\lambda_i$, il est possible de montrer :
+La difficulté de cette modélisation vient des $\lambda_i$, différents pour chaque patients. Cependant, il est possible de montrer que :
 
 \begin{equation}
-    P(y_i \mid\{\text{non guerison du patient }i\} \cap t_i) \sim \mathcal{B}ern \left (\dfrac{\beta}{1 + \beta}, t_i \right) 
+    P(y_i \mid\{\text{non guerison du patient }i\} \cap x_i+y_i) \sim \mathcal{B}ern \left (\dfrac{\beta}{1 + \beta}, x_i+y_i \right) 
 \end{equation}
+Cette formule est beaucoup plus pratique, car elle ne fait intervenir que le paramètre $\beta$. À l'aide de ces formules, on propose alors les deux modèles suivants pour notre problème :
 
-Avec $t_i = x_i + y_i$.
-
-De là, on en déduit alors la loi $y_i|t_i$ :
-
-\begin{equation} \label{eq3}
-\begin{split}
-&P(y_i = 0 \mid t_i)  = \theta + (1 - \theta )(1 - p) t_i \\
-&P(y_i\mid t_i) = (1 - \theta) \binom{t_i}{y_i}p^{y_i}(1-p)^{t_i-y_i}, y_i \geq 1 \\
-&p = \dfrac{\beta}{1 + \beta}
-\end{split}
-\end{equation}
- 
+\begin{figure}[H]
+\centering
+\begin{minipage}[b]{0.4\textwidth}
 \begin{center}
 \begin{tikzpicture}
 
     \node[draw, rectangle] (N1) { $\mathcal{N}(0, 10^{-4})$ };
-    \node[draw, rectangle, right=4cm of N1] (N2) { $\mathcal{N}(0, 10^{-4})$ };
+    \node[draw, rectangle, right=1cm of N1] (N2) { $\mathcal{N}(0, 10^{-4})$ };
 
     \node[draw, circle, below=0.8cm of N1] (alpha) { $\alpha$ };
     \node[draw, circle, below=0.8cm of N2] (delta) { $\delta$ };
@@ -63,24 +57,115 @@ De là, on en déduit alors la loi $y_i|t_i$ :
 
 \end{tikzpicture}
 \end{center}
+\end{minipage}
+\hfill
+\begin{minipage}[b]{0.4\textwidth}
+\begin{center}
+\begin{tikzpicture}
 
-On commence par calculer la loi de $\theta$ et de $p$ par la méthode la variable muette (ou via \href{https://en.wikipedia.org/wiki/Logit-normal_distribution}{wikipedia} :
+    \node[draw, rectangle] (N1) { $\mathcal{N}(0, 10^{4})$ };
+    \node[draw, rectangle, right=1cm of N1] (N2) { $\mathcal{N}(0, 10^{4})$ };
 
-\begin{equation}\label{eq4}
-    \begin{split}
-        &P(p) \propto exp \left (-\dfrac{1}{2 \sigma^2}logit(p)^2 \right) \dfrac{1}{p (1-p)} \\
-        &P(\theta) \propto exp \left (-\dfrac{1}{2 \sigma^2}logit(\theta)^2 \right) \dfrac{1}{\theta (1-\theta)}
-    \end{split}
-\end{equation}
+    \node[draw, circle, below=0.5cm of N1] (alpha) { $\alpha$ };
+    \node[draw, circle, below=0.75cm of N2] (delta) { $\delta$ };
 
-Et on peut obtenir les lois conditionnelles : 
-\begin{equation}\label{eq5}
-\begin{split}
-    P(p\mid \dots) &\propto \prod_{i=1}^n P(y_i \mid t_i) P(p)\\
-    &\propto exp \left (-\dfrac{1}{2 \sigma^2}logit(p)^2 \right) \dfrac{1}{p (1-p)} \prod_{i=1}^n P(y_i \mid t_i) \\
-    P(\theta \mid \dots) &\propto \prod_{i=1}^n P(y_i \mid t_i) P(\theta) \\
-    &\propto exp \left (-\dfrac{1}{2 \sigma^2}logit(\theta)^2 \right) \dfrac{1}{\theta (1-\theta)} \prod_{i=1}^n P(y_i \mid t_i)
-\end{split}
-\end{equation}
+    \node[draw, rounded corners, below=0.5cm of alpha] (logitp) { $logit( p) = \alpha$ };
+    \node[draw, rounded corners, below=0.75cm of delta] (logittheta) { $logit( \theta) = \delta$ };
+    \node[draw, circle, below=0.5cm of logitp](Zi) {$Z_i$};
 
-où $P(y_i \mid t_i)$ est donné par [\ref{eq3}] (Il est complexe de plus discrétiser notre formule ici car le cas $y_i = 0$ et $y_i \geq 1$ ne portent pas les mêmes facteurs).
+    \path (Zi) -- (logittheta) coordinate[midway] (midpoint);
+
+    \node[draw, circle, below=1.2cm of midpoint] (yi) { $y_i$ };
+
+    \draw[->] (N1) -- (alpha);
+    \draw[->] (N2) -- (delta);
+    \draw[->] (alpha) -- (logitp);
+    \draw[->] (delta) -- (logittheta);
+    \draw[->] (logitp) -- (Zi);
+    \draw[->] (Zi) -- (yi);
+    \draw[->] (logittheta) -- (yi);
+
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+\end{figure}
+
+Le premier modèle est le plus simple d'un point, dans le sens où il est celui qui fait intervenir le moins de variables. On peut retrouver les équations de ce modèle dans la partie 1 du notebook associée. Le second modèle fait intervenir les variables latentes $Z_i$, qui représente l'état du patient $i$ (1 pour guéri, 0 pour non guéri). Là encore, les équations de ce modèle peuvent êtres trouvées dans le notebook associés. Ce modèle a été introduit dans l'espoir de simplifier les équations du premier modèle. En effet sachant $Z_i$, on a alors que $P(y_i \mid Z_i, \dots)$ est ou bien une variable aléatoire constante (0 si le patient est guéri, i.e. si $Z_i=1$), ou bien suit une loi de Bernoulli de paramètres $p$ et $t_i := x_i + y_i$.
+Bien que cela simplifie la loi de $y_i \mid \dots$, cela nous ne permet pas de retomber pour les lois de $\alpha \mid \dots$ et $\delta \mid \dots$ sur des lois usuelles (notamment à cause du logit), et fournit donc au final un modèle très similaire, mais plus complexe que le premier modèle.
+
+\section{Résultats}
+
+On présente tout d'abord les résultats obtenus dans l'étude originale :
+
+\begin{center}
+\begin{tabular}{c | c  c  c}
+& mean & sd & median \\
+\hline
+$\alpha$ & -0.4809 & 0.2795 & -0.4767 \\
+$\beta$ & 0.6427 & 0.1812 & 0.6208 \\
+$\delta$ & 0.3144 & 0.6177 & 0.3124 \\
+$\theta$ & 0.5717 & 0.1391 & 0.5775 \\
+\end{tabular}
+\end{center}
+
+Ceux ci correspondent à une chaîne de taille 10 000 avec une période de chauffe de 1000. Nous allons reproduire cette expérience pour nos deux modèles.
+
+\subsection{Premier Modèle}
+
+\begin{figure}[H]
+\begin{minipage}{0.4\linewidth}
+    \begin{center}
+    \begin{tabular}{c | c  c  c}
+    & mean & sd & median \\
+    \hline
+    $\alpha$ & -0.5075 & 0.2804 & -0.5067 \\
+    $\beta$ & 0.6260  &  0.1778 & 0.6025 \\
+    $\delta$ & 0.3690  &  0.7033  &  0.3467 \\
+    $\theta$ & 0.5817  &  0.1535  &  0.5858 \\
+    \end{tabular}
+    \end{center}
+\end{minipage}
+\hfill
+\begin{minipage}{0.5\linewidth}
+    \includegraphics[width=1\linewidth]{figure/model1.png}
+\end{minipage}
+\end{figure}
+
+Les chaînes ont un très bel aspect, et on obtient des taux de mélanges très raisonnables. (Le seul raffinement qu'il resterait à faire serait de proposer des déviations standards pour les noyaux différentes, on voit que celle de delta est un peu trop élevée, ainsi que le taux d'acceptation qui est de 0.6, contre 0.3 pour alpha, mais cela n'est pas dramatique). De plus on obtient des résultats très similaires à ceux de l'étude originale, ce qui nous conforte dans la bonne réalisation de nos algorithmes.
+
+\subsection{Second Modèle}
+
+\begin{figure}[H]
+\begin{minipage}{0.4\linewidth}
+    \begin{center}
+    \begin{tabular}{c | c  c  c}
+    & mean & sd & median \\
+    \hline
+    $\alpha$ & -0.5071  &  0.2824  & -0.4972 \\
+    $\beta$ & 0.6266   & 0.1789  &  0.6082 \\
+    $\delta$ & 0.3943  &  0.7280 &   0.3879 \\
+    $\theta$ & 0.5866  &  0.1569  &  0.5958 \\
+    \end{tabular}
+    \end{center}
+\end{minipage}
+\hfill
+\begin{minipage}{0.5\linewidth}
+    \includegraphics[width=1\linewidth]{figure/model2.png}
+\end{minipage}
+\end{figure}
+
+On observe que les deux modèles sont très similaires dans les résultats, et que les chaînes présentent elles aussi de bonnes caractéristiques (peut être la chaîne en $\delta$ oscille un peu trop). Cependant, on note numériquement quelques différences : 
+\begin{itemize}
+    \item Tout d'abord, pour obtenir des taux de mélanges raisonnables, il est nécessaire d’abaisser la déviation standard pour les noyaux par rapport au premier modèle (on pourrait même juger qu'ici elle n'a pas été assez abaissée, mais les résultats restent tout de même satisfaisant).
+    \item Ensuite, en observant les valeurs moyennes des variables latentes, on se rends compte qu'elle ne change presque jamais d'états (ce qui est loin d'être étonnant pour certains patients du jeu de données, avec $y_i =0 $ et $x_i >> 1$).
+\end{itemize}
+
+Tous ces résultats nous montrent que bien que le second modèle reste corrects, la complexité qu'il rajoute n'est pas nécessaire pour modéliser le problème, et le premier modèle suffit largement.
+
+Que ce soit pour le premier ou le second modèle, il n'est malheureusement pas possible de simuler des données à partir de nos paramètres, car cette étude n'a pas cherché à modéliser les $\lambda_i$, nécéssaire pour simuler les variables $x_i$ et $y_i$. Ainsi, nous ne pouvons pas pousser loin la vérification de nos modèles.
+
+\subsection{Analyse des résultats}
+
+Grâce à ces résultats numériques, on peut en déduire une action positive assez forte du médicament. Sous hypothèse de normalité asymptotique, on obtient que $\theta \in [0.58 \pm 0.003]$ avec probabilité d'au moins 95\%. Cela veut donc dire que le traitement soigne au moins la moitié des patients. De plus, pour les patients non guéris par le traitement, sous les mêmes hypothèses, on observe que $\beta \in [0.63 \pm 0.003]$. Là encore, cela sougigne un impact positif du traitement, puisque cela signifie une diminution moyenne de la fréquence des PVC de 40\%. 
+
+Cependant, le jeu de données étant d'une taille vraiment faible (12 échantillons), cela ne permet pas de donner de forte garanties statistiques.
